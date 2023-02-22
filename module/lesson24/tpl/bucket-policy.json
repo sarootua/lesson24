@@ -1,0 +1,18 @@
+{
+  "Statement": [
+    {
+      "Sid": "AllowCloudFrontServiceRead",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "${bucket_arn}",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceArn": "${distribution_arn}"
+        }
+      }
+    }
+  ]
+}
