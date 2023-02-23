@@ -19,12 +19,14 @@ resource "aws_s3_bucket_acl" "bucket_acl" {
 
 resource "aws_s3_bucket_policy" "bucket_policy" {
   bucket = aws_s3_bucket.bucket.id
-  policy = "${data.template_file.bucket-policy.rendered}"
-
+  #policy = "${data.template_file.bucket-policy.rendered}"
+  policy = templatefile("${path.module}/tpl/bucket-policy.json", {
+    bucket_arn          = "${aws_s3_bucket.bucket.arn}/*"
+    distribution_arn    = "${aws_cloudfront_distribution.distribution.arn}"
+  })
   depends_on = [
     aws_cloudfront_distribution.distribution,
-    aws_s3_bucket.bucket,
-    data.template_file.bucket-policy
+    aws_s3_bucket.bucket
   ]
 }
 
@@ -35,6 +37,7 @@ resource "aws_cloudfront_origin_access_control" "oac" {
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
+  
   depends_on = [aws_s3_bucket.bucket]
 }
 
@@ -91,12 +94,12 @@ output "distribution_domain_name" {
 }
 
 ################## data ##################
-data "template_file" "bucket-policy" {
-  template = "${file("${path.module}/tpl/bucket-policy.json")}"
-
-  vars = {
-    bucket_arn          = "${aws_s3_bucket.bucket.arn}/*"
-    distribution_arn    = "${aws_cloudfront_distribution.distribution.arn}"
-  }
-}
+#data "template_file" "bucket-policy" {
+#  template = "${file("${path.module}/tpl/bucket-policy.json")}"
+#
+#  vars = {
+#    bucket_arn          = "${aws_s3_bucket.bucket.arn}/*"
+#    distribution_arn    = "${aws_cloudfront_distribution.distribution.arn}"
+#  }
+#}
 
